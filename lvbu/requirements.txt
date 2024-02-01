@@ -1,0 +1,6 @@
+flask
+pandas
+gunicorn
+gevent
+xlrd==1.2.0
+openpyxl

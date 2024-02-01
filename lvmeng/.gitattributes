@@ -1,0 +1,1 @@
+src/licensedcode/data/cache/license_index/index_cache filter=lfs diff=lfs merge=lfs -text

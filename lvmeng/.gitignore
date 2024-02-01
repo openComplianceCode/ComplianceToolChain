@@ -1,0 +1,8 @@
+*.pyc
+!index.pyc
+/target/
+.idea/
+src/builddata/
+src/licensedcode/data/cache/license_index
+*/__pycache__/
+.vscode/*
