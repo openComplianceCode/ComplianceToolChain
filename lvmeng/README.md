@@ -1,10 +1,10 @@
-###### 使用
+###### use
 
-可以使用命令行:
+You can use the command line:
 
-    python -m file "文件路径" -a wordFrequencySimilarity/DLD/tfidf/Ngram/scancode 
+    python -m file "file path" -a wordFrequencySimilarity/DLD/tfidf/Ngram/scancode 
 
-在tfidf、Ngram中可附加命令(默认为CosineSim):
+Additional commands can be added to tfidf and Ngram(Default is CosineSim):
 
     -s ScoreSim/CosineSim/DiceSim/BigramCosineSim
 

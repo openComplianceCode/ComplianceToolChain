@@ -54,7 +54,7 @@ class WordFrequencySimilarity(AtarashiAgent):
                     if str(self.licenseList.at[idx, 'shortname']) == 'BSD-2-Clause':
                         print(' ')
                     license = self.licenseList.at[idx, 'processed_text']
-                    # 统计出现次数
+                    # Count the number of occurrences
                     licensesFrequency.append(wordFrequency(re.findall(r'\b[a-z]{3,15}\b', license)))
 
                 processedLicense = wordFrequency(re.findall(r'\b[a-z]{3,15}\b', processedData))
@@ -116,7 +116,7 @@ class WordFrequencySimilarity(AtarashiAgent):
             licensesFrequency = []
             for idx in range(len(self.licenseList)):
                 license = self.licenseList.at[idx, 'processed_text']
-                # 统计出现次数
+                # Count the number of occurrences
                 licensesFrequency.append(wordFrequency(re.findall(r'\b[a-z]{3,15}\b', license)))
 
             processedLicense = wordFrequency(re.findall(r'\b[a-z]{3,15}\b', licenseText))

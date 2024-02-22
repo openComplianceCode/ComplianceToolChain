@@ -128,9 +128,9 @@ class CommentPreprocessor(object):
 
     supportedFileExtensions = list(LanguageMapper.LANG_MAP.keys())
 
-    # 创建临时文件
+    # Create temporary files
     fd, outputFile = tempfile.mkstemp()
-    # 将文件扩展名提取
+    # Extract file extension
     fileType = os.path.splitext(inputFile)[1]
 
     with open(outputFile, 'w') as outFile:

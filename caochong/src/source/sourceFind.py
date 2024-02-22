@@ -50,7 +50,6 @@ class Source_file(object):
 
     @catch_error
     def is_source_file(self, file_path):
-        # 判断文件扩展名
         source_extensions = ['.py', '.java', '.cpp', '.h', '.js', '.cs', '.rb', '.go', '.swift', '.html', '.css', '.php', '.sh'
                              'license', 'notice', 'copying', 'third_party_open_source_software_notice', 'copyright', '.spec']
         _, file_extension = os.path.splitext(file_path)

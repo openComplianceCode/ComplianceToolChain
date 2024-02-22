@@ -135,7 +135,7 @@ def get_licenses(location, min_score=0,
                 license_text_diagnostics=license_text_diagnostics,
                 license_url_template=license_url_template)
         )
-        # break 用来过滤scancode的多个结果
+        # break used to filter multiple results of scancode
         break
     percentage_of_license_text = 0
     if match:
