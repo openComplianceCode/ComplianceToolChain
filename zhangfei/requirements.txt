@@ -1,5 +1,6 @@
 scancode-toolkit==31.0.1
 beautifulsoup4==4.11.1
+commoncode==31.2.1
 grimoirelab_toolkit==0.1.12
 isort==5.10.1
 jsonpath==0.82

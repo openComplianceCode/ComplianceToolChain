@@ -1,10 +1,15 @@
 import json
 import os
+import time
+
 from reposca.repoDb import RepoDb
 from apscheduler.schedulers.background import BackgroundScheduler
+from reposca.scheduleSca import ScheduleSca
 from util.catchUtil import catch_error
 
 from util.authApi import AuthApi
+
+PER_PAGE = 100
 
 class Scheduler(object):
 
@@ -17,6 +22,14 @@ class Scheduler(object):
             max_instances=10,
             trigger='cron',
             hour=19,
+        )
+
+        scheduler.add_job(
+            self.sca_repo,
+            max_instances=10,
+            trigger='cron',
+	        day='4th mon',
+            hour=21
         )
 
     @catch_error
@@ -44,6 +57,7 @@ class Scheduler(object):
                     else:
                         pr_response = apiObc.getPrInfoByGithub(pr_owner, pr_repo, pr_num)
                     if pr_response == 403 or pr_response == 404:
+                        time.sleep(60)
                         continue
                     prData = pr_response.data.decode('utf-8')
                     prData = json.loads(prData)
@@ -54,4 +68,8 @@ class Scheduler(object):
         finally:
             dbObject.Close_Con()
         
-        
+    @catch_error    
+    def sca_repo(self):
+        sca_obj = ScheduleSca()
+        sca_obj.sca_repo()
+

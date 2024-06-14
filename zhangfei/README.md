@@ -1,6 +1,6 @@
-# zhangfei
+# issue-scanner
 
-* 1、[zhangfei introduce](doc/scanner/issueScanner.md)
+* 1、[issue-scanner introduce](doc/scanner/zhangfei.md)
 
 * 2、[Run](doc/run/howToRun.md)
 

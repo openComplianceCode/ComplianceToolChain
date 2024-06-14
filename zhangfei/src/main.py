@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import calendar
 from concurrent.futures import ThreadPoolExecutor
 import json
+import logging
+import time
 import tornado.web
 import tornado.ioloop
 import tornado.httpserver
@@ -11,12 +14,16 @@ import config
 from reposca.fixSca import fixSca
 from reposca.itemLicSca import ItemLicSca
 from reposca.queryBoard import QueryBoard
+from reposca.queryMeasure import QueryMeasure
 from reposca.prSca import PrSca
 from reposca.resonseSca import ResonseSca
 from reposca.licenseCheck import LicenseCheck
 from tornado import gen
+from reposca.scheduleSca import ScheduleSca
+from reposca.tempSca import TempSca
 from util.scheduleUtil import Scheduler
 from util.postOrdered import infixToPostfix
+from datetime import datetime, timedelta
 exitFlag = 0
 class Main(tornado.web.RequestHandler):
     executor = ThreadPoolExecutor(1000)
@@ -170,9 +177,65 @@ class Check(tornado.web.RequestHandler):
     
     @run_on_executor
     def block(self, license):      
-        licCheck = LicenseCheck('repo')
+        licCheck = LicenseCheck('repo', 'indelic')
         result = licCheck.check_admittance(license)
         jsonRe = json.dumps(result)
+        return jsonRe
+    
+class Query_Measure(tornado.web.RequestHandler):
+    executor = ThreadPoolExecutor(1000)
+
+    @gen.coroutine
+    def get(self):
+        """get request"""
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
+        tag = self.get_argument('tag')
+        org = self.get_argument('org','')
+        repo = self.get_argument('repo','')
+        dataMonth = self.get_argument('date','')
+        result = yield self.block(tag, org, repo, dataMonth)
+        self.finish(result)
+
+    @gen.coroutine
+    def post(self):
+        '''post request'''
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
+        tag = self.get_argument('tag')
+        org = self.get_argument('org','')
+        repo = self.get_argument('repo','')
+        dataMonth = self.get_argument('date','')
+        result = yield self.block(tag, org, repo, dataMonth)
+        self.finish(result)
+    
+    @run_on_executor
+    def block(self, tag, org, repo, dataMonth):      
+        measure_query = QueryMeasure()
+        result = measure_query.query(tag, org, repo, dataMonth)
+        jsonRe = json.dumps(result)
+        return jsonRe
+
+class ScaList(tornado.web.RequestHandler):
+    executor = ThreadPoolExecutor(1000)
+
+    @gen.coroutine
+    def get(self):
+        """get request"""
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
+        result = yield self.block()
+        self.finish(result)
+
+    @gen.coroutine
+    def post(self):
+        '''post request'''
+        self.set_header('Content-Type', 'application/json; charset=UTF-8')
+        result = yield self.block()
+        self.finish(result)
+    
+    @run_on_executor
+    def block(self):
+        sca = TempSca()
+        sca.sca_repo()
+        jsonRe = json.dumps("DONE")
         return jsonRe
 
 application = tornado.web.Application([
@@ -180,12 +243,17 @@ application = tornado.web.Application([
     (r"/lic", LicSca), 
     (r"/doSca", ItemSca), 
     (r"/board", Query),
-    (r"/check", Check)
+    (r"/check", Check),
+    (r"/measure", Query_Measure),
+    (r"/item", ScaList)
     ])
 
 if __name__ == '__main__':
-    schedOb = Scheduler()
+    # schedOb = Scheduler()
     httpServer = tornado.httpserver.HTTPServer(application)
-    httpServer.bind(config.options["port"])   
+    port = config.options["port"]
+    httpServer.bind(port)   
     httpServer.start(1)
+    logging.info(f"Server started successfully on port {port}")
     tornado.ioloop.IOLoop.current().start()
+    

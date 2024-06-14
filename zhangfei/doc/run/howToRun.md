@@ -2,7 +2,7 @@
 
 * 一、Pull dependency
     ```
-    pip install -r issue-scanner/requirements.txt
+    pip install -r zhangfei/requirements.txt
     ```
 * 二、Set up system environment
     ```
@@ -32,11 +32,11 @@
     
     as a service
     ```
-    python issue-scanner/src/main.py
+    python zhangfei/src/main.py
     ```
     as a command
     ```
-    python issue-scanner/src/command.py -m pr/repo/local input --token
+    python zhangfei/src/command.py -m pr/repo/local input --token
     ```
   
 ---

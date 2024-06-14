@@ -85,7 +85,7 @@ class ItemLicSca(object):
                 for lic in reLicList:
                     spLic = licenseSplit(lic)
                     spLicList.extend(spLic)
-                licenseCheck = LicenseCheck('repo')
+                licenseCheck = LicenseCheck('repo', 'indelic')
                 for item in range(len(spLicList) - 1, -1, -1):
                     if licenseCheck.check_exception(spLicList[item]):
                         del spLicList[item]
@@ -173,7 +173,7 @@ class ItemLicSca(object):
                     return scaResult 
                 HttpMessage = response.info()                
                 ContentType = HttpMessage.get("Content-Type")   
-                self._commit_ = "master"           
+                self._commit_ = ""           
                 #Determine download link/website link 
                 if "text/html;" in ContentType:        
                     type = urlList[2]
@@ -322,7 +322,7 @@ class ItemLicSca(object):
             logging.info("==============START SCAN REPO==============")
             # Call scancode
             command = shlex.split(
-                'scancode -l -c %s --max-depth %s --json %s -n 3 --timeout 10 --max-in-memory -1 --license-score 80' % (self._repoSrc_, maxDepth, tempJson))
+                'scancode -l -c %s --max-depth %s --json %s -n 5 --timeout 10 --max-in-memory -1 --license-score 80' % (self._repoSrc_, maxDepth, tempJson))
             resultCode = subprocess.Popen(command)
             while subprocess.Popen.poll(resultCode) == None:
                 time.sleep(1)
@@ -371,33 +371,30 @@ class ItemLicSca(object):
         self._delSrc_ = temFileSrc + '/'+self._owner_ + '/' + str(self._timestamp_)
         if os.path.exists(self._repoSrc_) is False:
             os.makedirs(self._repoSrc_)       
-        try:
-            repo = Repo.init(self._repoSrc_)
-            origin = repo.create_remote("origin", self._gitUrl_)
-            origin.fetch(self._commit_, depth=1)
-            repo.git.checkout("FETCH_HEAD")
-        except Exception as e:
-            if e.status == 128:
-                self._commit_ = "main"
-                origin.fetch(self._commit_, depth=1)
-                repo.git.checkout("FETCH_HEAD")
+        try:     
+            if self._commit_ != '':      
+                Repo.clone_from(self._gitUrl_, self._repoSrc_,depth=1,branch=self._commit_)
             else:
-                scaResult = {
-                    "repo_license_legal": {
-                        "pass": False,
-                        "result_code": "",
-                        "notice": "Git clone failed, invalid URL",
-                        "is_legal": {"pass": False,"license": [],"notice": "","detail": {}}
-                    },
-                    "spec_license_legal": {},
-                    "license_in_scope": {},
-                    "repo_copyright_legal": {
-                        "pass": False,
-                        "result_code": "",
-                        "notice": "Git clone failed, invalid URL",
-                        "copyright": []
-                    }
+                Repo.clone_from(self._gitUrl_, self._repoSrc_,depth=1)    
+            repo = Repo(self._repoSrc_)
+            self._commit_ = repo.active_branch.name
+        except Exception as e:
+            scaResult = {
+                "repo_license_legal": {
+                    "pass": False,
+                    "result_code": "",
+                    "notice": "Git clone failed, invalid URL",
+                    "is_legal": {"pass": False,"license": [],"notice": "","detail": {}}
+                },
+                "spec_license_legal": {},
+                "license_in_scope": {},
+                "repo_copyright_legal": {
+                    "pass": False,
+                    "result_code": "",
+                    "notice": "Git clone failed, invalid URL",
+                    "copyright": []
                 }
+            }
             return scaResult
         logging.info("===============END FETCH REPO==============")
         return scaResult

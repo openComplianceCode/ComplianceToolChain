@@ -46,7 +46,8 @@ class AuthApi(object):
             'GET',
             apiUrl,
             headers = {
-                'access_token': authorToken
+                'User-Agent': random.choice(USER_AGENT),
+                'access_token': authorToken.strip()
             }
         )       
         resStatus = response.status
@@ -58,7 +59,8 @@ class AuthApi(object):
                     'GET',
                     apiUrl,
                     headers = {
-                        'access_token': authorToken
+                        'User-Agent': random.choice(USER_AGENT),
+                        'access_token': authorToken.strip()
                     }
                 )         
                 resStatus = response.status

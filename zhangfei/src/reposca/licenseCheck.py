@@ -4,6 +4,7 @@ import os
 
 import yaml
 
+from util.postOrdered import infixToPostfix
 from util.stack import Stack
 
 logger = logging.getLogger("reposca")
@@ -23,15 +24,18 @@ class LicenseCheck(object):
                                    "config",
                                    "Licenses.yaml")
 
-    def __init__(self, type):
+    def __init__(self, type, accesstype):
         """
         type :  repo -  repo-level
                 file -  file-level
+        accesstype:  osf - osi/fsf approve
+                     indelic - Custom access
         """
         self._white_black_list = {}
         self._license_translation = {}
         self.load_config()
         self._type_ = type
+        self._accessType_ = accesstype
     
 
     @catch_error
@@ -202,18 +206,25 @@ class LicenseCheck(object):
             elif res['exception'] == 'Y':
                 impResult = True
             else:
-                if self._type_ == 'repo':
-                    if (res['oeApproved'] == 'Y' or res['fsfApproved'] == 'Y' or res['osiApproved'] == 'Y') and res['lowRisk'] == 'N':
+                if self._accessType_ == 'osf':
+                    if res['oeApproved'] == 'Y' or res['fsfApproved'] == 'Y':
                         impResult = True
                     else:
                         impResult = False
                         impLic.append(license)
                 else:
-                    if res['oeApproved'] == 'Y' or res['fsfApproved'] == 'Y' or res['osiApproved'] == 'Y' or res['lowRisk'] == 'Y':
-                        impResult = True
+                    if self._type_ == 'repo':
+                        if (res['oeApproved'] == 'Y' or res['fsfApproved'] == 'Y' or res['osiApproved'] == 'Y') and res['lowRisk'] == 'N':
+                            impResult = True
+                        else:
+                            impResult = False
+                            impLic.append(license)
                     else:
-                        impResult = False
-                        impLic.append(license)
+                        if res['oeApproved'] == 'Y' or res['fsfApproved'] == 'Y' or res['osiApproved'] == 'Y' or res['lowRisk'] == 'Y':
+                            impResult = True
+                        else:
+                            impResult = False
+                            impLic.append(license)
         elif res['tag'] == "nonstandard":
             nstdResult = False    
             nstdLic.append(license)
@@ -312,14 +323,48 @@ class LicenseCheck(object):
     @catch_error
     def check_admittance(self, license):
         result = "NOT_ALLOW"
-        lowLic = license.lower()
-        res = self._white_black_list.get(lowLic, "unknow")
-        if res == 'unknow':
-            result = "UNKNOW"
-        elif res['tag'] == "licenses":
-            if res['fsfApproved'] == 'Y' or res['osiApproved'] == 'Y' or res['oeApproved'] == 'Y':
-                result = "ALLOW"
-            elif res['lowRisk'] == 'Y':
-                result = "LIMIT"
-        
+        licenses = infixToPostfix(license)
+        res = {}
+        result_stack = Stack()
+        for lic in licenses:
+            if lic.lower() in ['and', 'or', 'with']:
+                licBack = result_stack.pop()
+                licHead = result_stack.pop()
+                if isinstance(licHead, dict):
+                    reHead = licHead
+                else:
+                    reHead = self.check_license(licHead)
+                if isinstance(licBack, dict):
+                    reBack = licBack
+                else:
+                    reBack = self.check_license(licBack)
+                res = self.analyze_detial(reHead, reBack, lic.lower())
+                result_stack.push(res)
+            else:
+                reLic = self.check_license(lic)
+                result_stack.push(reLic)
+
+        while not result_stack.is_empty():
+            if result_stack.size() > 1:
+                res = self.analyze_detial(result_stack.pop(), result_stack.pop(), 'and')
+                result_stack.push(res)
+            else:    
+                res = result_stack.pop()
+
+        resImp = res.get('is_white')
+        resNstd = res.get('is_standard')
+        resReivew = res.get('is_review')
+        resFlag = resImp.get('pass') & resNstd.get('pass') & resReivew.get('pass')
+        if resFlag:
+            result = "ALLOW"
+        else:
+            nstdRisks = '、'.join(resNstd.get('risks'))
+            revRisks = '、'.join(resReivew.get('risks'))
+            impRisks = '、'.join(resImp.get('risks'))
+            if impRisks != '':
+                result = "NOT_ALLOW"              
+            if nstdRisks != '':
+                result = "NOT_ALLOW"
+            if revRisks != '':
+                result = "UNKNOW"
         return result
