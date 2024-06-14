@@ -1,4 +1,4 @@
-# KG_License_ssdut
+# Lvbu
 
 #### Description
 docker image - Open source license conflict retrieval
