@@ -1,4 +1,4 @@
-# zhangfei
+# Zhangfei
 
 * 1、[issue-scanner introduce](doc/scanner/zhangfei.md)
 
