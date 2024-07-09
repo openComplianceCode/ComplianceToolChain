@@ -1,8 +1,3 @@
-# issue-scanner
-
-Provides scanning analysis software, PR license and copyright functions in a service-oriented manner, and supports Gitee, Github, Gitlab, http, and purl link input.
-
-
 # License Compliance issues (rules baseline)
 
 This rule is designed to help community developers understand the compliance issues that exist in the software. For project compliance, this rule is the minimum requirement for License compliance. License compliance issues include but are not limited to these. Listed below are some common license compliance issues.
